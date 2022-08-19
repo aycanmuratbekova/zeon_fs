@@ -1,7 +1,7 @@
 import pathlib
 
 
-zeon_path = pathlib.Path.cwd() / 'zeon_fs'
+zeon_path = pathlib.Path(__file__).parent.parent / 'zeon_fs'
 
 
 def get_existing_files(args):
