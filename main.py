@@ -1,18 +1,13 @@
 import sys
 from code.list import ls
-from code.create import create
-from code.delete import move
+from code.add import copy
+from code.delete import delete
 
 
 commands = {
-    'create': create,
-    'delete': move,
+    'add': copy,
+    'delete': delete,
     'list': ls
-}
-
-commands_arg = {
-    'zero_argument': ['list'],
-    'min_one_argument': ['delete', 'create']
 }
 
 
@@ -23,14 +18,11 @@ def execute():
     if command not in commands:
         exit('Not in commands\n')
 
-    if command in commands_arg['min_one_argument'] and len(args) < 1:
-        exit('Need more arguments\n')
+    if command == 'list':
+        ls()
+        exit()
 
-    if command in commands_arg['zero_argument']:
-        commands[command]()
-
-    if command in commands_arg['min_one_argument']:
-        commands[command](args)
+    commands[command](args)
 
 
 if __name__ == "__main__":

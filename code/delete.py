@@ -1,19 +1,15 @@
-import pathlib
-import shutil
-from .helper import get_existing_files, zeon_path
+from .helper import zeon_path
 
 
-def move(args):
+def delete(file_name):
 
-    dst_path = pathlib.Path.cwd() / 'deleted'
+    if not file_name:
+        exit("\n Needs more arguments \n")
 
-    existing_files = get_existing_files(args)
+    file_path = zeon_path / file_name[0]
 
-    if len(existing_files) == 0:
-        exit(f'\nNo files to Delete :\n  {args}\n')
+    if not file_path.exists():
+        exit("\n No file to delete : \n")
 
-    for file_name in existing_files:
-        shutil.move(zeon_path/file_name, dst_path/file_name)
-        print(file_name)
-
-    print('Was successfully Deleted:')
+    file_path.unlink()
+    print(f"\n File '{file_name[0]}' was successfully Deleted : \n")
