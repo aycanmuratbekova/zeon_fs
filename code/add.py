@@ -1,6 +1,6 @@
 import shutil
 
-from .helper import get_existing_files, zeon_path
+from .helper import add_file_hash, zeon_path
 
 
 def copy(file_name):
@@ -16,6 +16,9 @@ def copy(file_name):
 
     if file_path.exists():
         exit("\n can't add - file already exists  : \n")
+
+    if add_file_hash(file_name[0]):
+        exit("\n File was successfully added : \n")
 
     shutil.copy(home_path, zeon_path/file_name[0])
     print("\n File was successfully added : \n")
