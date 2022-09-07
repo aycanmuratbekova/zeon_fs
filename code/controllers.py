@@ -11,7 +11,7 @@ def ctl_add(file_name):
         exit(f"\n Needs more arguments \n")
 
     if not (root_path / 'home' / file_name).exists():
-        exit(f"\nThere is no such file '{file_name}' in the system, therefore we cannot add it to the file system:\n")
+        exit(f"\nNo such file '{file_name}' in the system, therefore we can't add it:\n")
 
     copy(file_name)
 
