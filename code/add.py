@@ -1,6 +1,6 @@
-import os
+from datetime import datetime
 import hashlib
-import csv
+import pickle
 import shutil
 
 from .helper import root_path
@@ -8,51 +8,36 @@ from .helper import root_path
 
 def copy(file_name):
 
-    if not file_name:
-        exit("\n Needs more arguments \n")
-
-    file_name = file_name[0]
     name_hash = hashlib.sha256(file_name.encode()).hexdigest()
-    csv_fname = name_hash[:4] + '.csv'
-    with open(root_path / 'home' / file_name, 'rb') as opened_file:
-        content = opened_file.read()
-        content_hash = hashlib.sha256(content).hexdigest()
 
-    if (root_path/'db'/csv_fname).exists():
-        with open(root_path/'db'/csv_fname, 'r') as file:
-            csvreader = csv.reader(file)
-            for row in csvreader:
-                if row[0] == file_name:
-                    exit(f"\n File with name: '{file_name}' exists can't add : \n")
+    content = open(root_path / 'home' / file_name, 'rb').read()
+    content_hash = hashlib.sha256(content).hexdigest()
 
-        with open(root_path/'db'/csv_fname, 'a') as file:
-            csvwriter = csv.writer(file)
-            csvwriter.writerow([file_name, content_hash, os.path.getsize(root_path/'home'/file_name)])
+    path_to_names = root_path / 'fs' / '/'.join(str(name_hash[:4])) / 'names.pickle'
+    path_to_content = root_path / 'fs' / '/'.join(str(content_hash[:4])) / 'content.pickle'
 
-    (root_path / 'db' / csv_fname).touch()
-    with open(root_path / 'db' / csv_fname, 'w') as file:
-        csvwriter = csv.writer(file)
-        csvwriter.writerow([file_name, content_hash, os.path.getsize(root_path/'home'/file_name)])
+    with open(path_to_names, 'rb') as file:
+        names = pickle.load(file)
 
-    file_path = root_path/'mydb'/content_hash[0]/content_hash[1]/content_hash[2]/content_hash[3]
+    if name_hash in names:
+        exit(f"\n File with name: '{file_name}' exists can't add : \n")
 
-    if not file_path.exists():
-        file_path.mkdir(parents=True, exist_ok=True)
+    content_hashes = pickle.load(open(path_to_content, 'rb'))
+
+    if content_hash not in content_hashes:
         name_suffix = file_name.split('.')
-        name = content_hash + '__0__.' + name_suffix[1]
-        shutil.copy(root_path / "home" / file_name, file_path/name)
-        exit(f"\n File was successfully added : \n")
+        name = content_hash + "." + name_suffix[1]
+        shutil.copy(root_path / "home" / file_name, path_to_content.parent / name)
 
-    files = os.listdir(file_path)
-    for file in files:
-        file_text = str(file).split('__')
-        if file_text[0] == content_hash:
-            old_name = file_path/str(file)
-            new_name = file_path/str(file_text[0]+"__"+str(int(file_text[1])+1)+"__"+file_text[2])
-            os.rename(old_name, new_name)
-            exit(f"\n File was successfully added : \n")
+    content_hashes[content_hash] = content_hashes.setdefault(content_hash, []) +\
+        [file_name, (root_path/'home'/file_name).stat().st_size, datetime.now().strftime("%m/%d/%Y, %H:%M:%S")]
+    with open(path_to_content, 'wb') as file:
+        pickle.dump(content_hashes, file)
 
-    name_suffix = file_name.split('.')
-    name = content_hash + '__0__.' + name_suffix[1]
-    shutil.copy(root_path / "home" / file_name, file_path/name)
-    exit(f"\n File was successfully added : \n")
+    names[name_hash] = file_name
+    with open(path_to_names, 'wb') as file:
+        pickle.dump(names, file)
+
+    exit(f"\n File '{file_name}' was successfully added : \n")
+
+
