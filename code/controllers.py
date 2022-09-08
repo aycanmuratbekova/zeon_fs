@@ -1,8 +1,8 @@
 from .init import init
 from .list import ls
-from .add2 import copy
+from .add import copy
 from .delete import delete
-from .helper import root_path
+from .helper import root_path, file_name_exists
 
 
 def ctl_add(file_name):
@@ -17,7 +17,13 @@ def ctl_add(file_name):
 
 
 def ctl_delete(file_name):
-    delete(file_name)
+    if not file_name:
+        exit("\n Needs more arguments \n")
+
+    if not file_name_exists(file_name[0]):
+        exit(f"\nNo file to delete: \n")
+
+    delete(file_name[0])
 
 
 def ctl_list(file_name):

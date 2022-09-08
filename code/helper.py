@@ -1,35 +1,26 @@
-import os
 import pathlib
 import pickle
 import hashlib
-from datetime import datetime
 
 
 root_path = pathlib.Path(__file__).parent.parent
 
 
-def create_path(file_name: str, content=False, fs_path=root_path) -> pathlib.Path:
-    if content:
-        hash_str = get_hash(str(fs_path/'home'/file_name), True)
-        path_to = fs_path / 'fs' / '/'.join(str(hash_str[:4])) / 'content.pickle'
-    else:
-        hash_str = get_hash(file_name)
-        path_to = fs_path / 'fs' / '/'.join(str(hash_str[:4])) / 'names.pickle'
-
+def create_db(path_to: pathlib.Path) -> bool:
     if not path_to.exists():
-        os.makedirs(os.path.dirname(path_to), exist_ok=True)
+        (path_to.parent/'files').mkdir(parents=True, exist_ok=True)
         with open(path_to, 'wb') as file:
             pickle.dump({}, file)
-    return path_to
+    return True
 
 
-def read_from(path_to: pathlib.Path) -> dict:
+def read_from_db(path_to: pathlib.Path) -> dict:
     with open(path_to, 'rb') as file:
         names = pickle.load(file)
     return names
 
 
-def write_to(path_to: pathlib.Path, content: dict) -> str:
+def write_to_db(path_to: pathlib.Path, content: dict) -> str:
     with open(path_to, 'wb') as file:
         pickle.dump(content, file)
     return 'ok'
@@ -44,27 +35,54 @@ def get_hash(file_name: str, file=False) -> str:
     return hashed_text
 
 
-def rename(file_name, content_hash):
-    name_suffix = file_name.split('.')
-    name = content_hash + "." + name_suffix[1]
-    return name
+def make_path(name_hash) -> pathlib.Path:
+    path_to = root_path / 'fs' / '/'.join(str(name_hash[:4]))
+    return path_to
 
 
-def add_hash_to_dict(content_hashes, file_name, content_hash):
-    content_hashes[content_hash] = content_hashes.setdefault(content_hash, []) +\
-        [file_name, get_file_size(file_name), get_creation_date()]
-    return content_hashes
+def file_name_exists(file_name: str) -> bool:
+
+    name_hash = get_hash(file_name)
+    path_to_names = make_path(name_hash) / 'names.pickle'
+    if not path_to_names.exists():
+        return False
+    names = read_from_db(path_to_names)
+    return name_hash in names
 
 
-def get_file_size(file_name: str) -> str:
-    file_size = str((root_path / 'home' / file_name).stat().st_size)
-    return file_size
+def delete_from_names(file_name) -> str:
+    name_hash = get_hash(file_name)
+    path_to_names = make_path(name_hash) / 'names.pickle'
+
+    names = read_from_db(path_to_names)
+    content_hash = names[name_hash]
+    del names[name_hash]
+
+    write_to_db(path_to_names, names)
+
+    return content_hash[1]
 
 
-def get_creation_date() -> str:
-    dt = datetime.now().strftime("%m/%d/%Y, %H:%M:%S")
-    return dt
+def delete_from_content(content_hash: str, file_name: str) -> bool:
+    path_to_content = make_path(content_hash) / 'contents.pickle'
+    content = read_from_db(path_to_content)
+
+    hashes = content[content_hash]
+
+    if len(hashes) == 1:
+        content.pop(content_hash)
+        write_to_db(path_to_content, content)
+        return False
+
+    hashes.pop(file_name)
+    content[content_hash] = hashes
+    write_to_db(path_to_content, content)
+    return True
 
 
-dict_list = {}
+def delete_from_fs(content_hash: str) -> None:
+    path_to_file = make_path(content_hash) / 'files' / content_hash
+    path_to_file.unlink()
+
+
 
