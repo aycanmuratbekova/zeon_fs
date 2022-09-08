@@ -1,43 +1,40 @@
-from datetime import datetime
-import hashlib
-import pickle
+import os
 import shutil
+from datetime import datetime
 
 from .helper import root_path
+from .helper import create_db, read_from_db, write_to_db, get_hash, make_path
 
 
 def copy(file_name):
 
-    name_hash = hashlib.sha256(file_name.encode()).hexdigest()
+    name_hash = get_hash(file_name)
 
-    content = open(root_path / 'home' / file_name, 'rb').read()
-    content_hash = hashlib.sha256(content).hexdigest()
+    path_to_names = make_path(name_hash)/'names.pickle'
 
-    path_to_names = root_path / 'fs' / '/'.join(str(name_hash[:4])) / 'names.pickle'
-    path_to_content = root_path / 'fs' / '/'.join(str(content_hash[:4])) / 'content.pickle'
+    create_db(path_to_names)    # Cоздаем пустой names.pickle если нету
 
-    with open(path_to_names, 'rb') as file:
-        names = pickle.load(file)
-
+    names = read_from_db(path_to_names)
     if name_hash in names:
         exit(f"\n File with name: '{file_name}' exists can't add : \n")
 
-    content_hashes = pickle.load(open(path_to_content, 'rb'))
+    content_hash = get_hash(file_name, file=True)
 
-    if content_hash not in content_hashes:
-        name_suffix = file_name.split('.')
-        name = content_hash + "." + name_suffix[1]
-        shutil.copy(root_path / "home" / file_name, path_to_content.parent / name)
+    path_to_contents = make_path(content_hash)/'contents.pickle'
 
-    content_hashes[content_hash] = content_hashes.setdefault(content_hash, []) +\
-        [file_name, (root_path/'home'/file_name).stat().st_size, datetime.now().strftime("%m/%d/%Y, %H:%M:%S")]
-    with open(path_to_content, 'wb') as file:
-        pickle.dump(content_hashes, file)
+    create_db(path_to_contents)     # Cоздаем пустой contents.pickle если нету
 
-    names[name_hash] = file_name
-    with open(path_to_names, 'wb') as file:
-        pickle.dump(names, file)
+    contents = read_from_db(path_to_contents)
 
-    exit(f"\n File '{file_name}' was successfully added : \n")
+    if content_hash not in contents:
+        print(f"\ncontent_hash not in contents : {content_hash not in contents}\n")
+        shutil.copy(root_path / "home" / file_name, path_to_contents.parent/'files'/content_hash)
 
+    names[name_hash] = [file_name, content_hash]
+    write_to_db(path_to_names, names)
 
+    contents[content_hash] = contents.setdefault(content_hash, {})
+    contents[content_hash][file_name] = [os.path.getsize(root_path/"home"/file_name), str(datetime.now())]
+    write_to_db(path_to_contents, contents)
+
+    print(f"\n File '{file_name}' was successfully added : \n\n{contents}")
