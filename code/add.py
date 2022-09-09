@@ -3,7 +3,7 @@ import shutil
 from datetime import datetime
 
 from .helper import root_path
-from .helper import create_db, read_from_db, write_to_db, get_hash, make_path
+from .helper import read_from_db, write_to_db, get_hash, make_path
 
 
 def copy(file_name):
@@ -12,8 +12,6 @@ def copy(file_name):
 
     path_to_names = make_path(name_hash)/'names.pickle'
 
-    create_db(path_to_names)    # Cоздаем пустой names.pickle если нету
-
     names = read_from_db(path_to_names)
     if name_hash in names:
         exit(f"\n File with name: '{file_name}' exists can't add : \n")
@@ -21,8 +19,6 @@ def copy(file_name):
     content_hash = get_hash(file_name, file=True)
 
     path_to_contents = make_path(content_hash)/'contents.pickle'
-
-    create_db(path_to_contents)     # Cоздаем пустой contents.pickle если нету
 
     contents = read_from_db(path_to_contents)
 
@@ -37,4 +33,4 @@ def copy(file_name):
     contents[content_hash][file_name] = [os.path.getsize(root_path/"home"/file_name), str(datetime.now())]
     write_to_db(path_to_contents, contents)
 
-    print(f"\n File '{file_name}' was successfully added : \n\n{contents}")
+    print(f"\n File '{file_name}' was successfully added : \n\n{contents}\n")

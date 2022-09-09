@@ -6,24 +6,23 @@ import hashlib
 root_path = pathlib.Path(__file__).parent.parent
 
 
-def create_db(path_to: pathlib.Path) -> bool:
+def write_to_db(path_to: pathlib.Path, content: dict):
     if not path_to.exists():
         (path_to.parent/'files').mkdir(parents=True, exist_ok=True)
         with open(path_to, 'wb') as file:
             pickle.dump({}, file)
-    return True
+    with open(path_to, 'wb') as file:
+        pickle.dump(content, file)
 
 
 def read_from_db(path_to: pathlib.Path) -> dict:
+    if not path_to.exists():
+        (path_to.parent/'files').mkdir(parents=True, exist_ok=True)
+        with open(path_to, 'wb') as file:
+            pickle.dump({}, file)
     with open(path_to, 'rb') as file:
         names = pickle.load(file)
     return names
-
-
-def write_to_db(path_to: pathlib.Path, content: dict) -> str:
-    with open(path_to, 'wb') as file:
-        pickle.dump(content, file)
-    return 'ok'
 
 
 def get_hash(file_name: str, file=False) -> str:
@@ -63,7 +62,7 @@ def delete_from_names(file_name) -> str:
     return content_hash[1]
 
 
-def delete_from_content(content_hash: str, file_name: str) -> bool:
+def delete_content(content_hash: str, file_name: str):
     path_to_content = make_path(content_hash) / 'contents.pickle'
     content = read_from_db(path_to_content)
 
@@ -72,17 +71,16 @@ def delete_from_content(content_hash: str, file_name: str) -> bool:
     if len(hashes) == 1:
         content.pop(content_hash)
         write_to_db(path_to_content, content)
-        return False
+        path_to_file = make_path(content_hash) / 'files' / content_hash
+        path_to_file.unlink()
+        exit(f" File was successfully deleted :")
 
     hashes.pop(file_name)
     content[content_hash] = hashes
     write_to_db(path_to_content, content)
-    return True
+    exit(f" File was successfully deleted :")
 
 
-def delete_from_fs(content_hash: str) -> None:
-    path_to_file = make_path(content_hash) / 'files' / content_hash
-    path_to_file.unlink()
 
 
 
