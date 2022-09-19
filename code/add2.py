@@ -2,7 +2,7 @@ import os
 import shutil
 from datetime import datetime
 
-from .helper import root_path, add_to_list
+from .helper import root_path, add_to_list, add_to_tree
 from .helper import read_from_db, write_to_db, get_hash, make_path
 
 
@@ -28,3 +28,4 @@ def copy(file_name):
     write_to_db(make_path(content_hash)/'contents.pickle', contents)
     print(f"\n File '{file_name}' was successfully added : \n\n{contents}\n")
     add_to_list(file_name)
+    add_to_tree(file_name)

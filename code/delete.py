@@ -1,4 +1,4 @@
-from .helper import file_name_exists, delete_from_list
+from .helper import file_name_exists, delete_from_list, delete_from_tree
 from .helper import get_data_for_del, get_hash, delete_from_names, delete_copies, delete_content
 
 
@@ -15,6 +15,7 @@ def delete(file_name):
 
     content_hash = content_hash[1]
     path_to_content, content, hashes = get_data_for_del(content_hash, 'contents.pickle')
+    delete_from_tree(file_name)
 
     if len(hashes) > 1:
         delete_copies(hashes, file_name, content, content_hash, path_to_content)
