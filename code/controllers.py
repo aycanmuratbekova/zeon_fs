@@ -23,6 +23,7 @@ def ctl_list(file_name):
     if len(file_name) == 0:
         ls('*')
     else:
+
         ls(file_name[0])
 
 

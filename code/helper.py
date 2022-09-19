@@ -4,6 +4,9 @@ import hashlib
 import os
 from datetime import datetime
 
+from .btree import add, delete
+
+
 root_path = pathlib.Path(__file__).parent.parent
 
 
@@ -95,7 +98,7 @@ def read_from_db(path_to: pathlib.Path) -> dict:
 def add_to_list(file_name):
     path_to_list = root_path/'btree/list.pickle'
     if not path_to_list.exists():
-        path_to_list.parent.mkdir(parents=True, exist_ok=True)
+        #path_to_list.parent.mkdir(parents=True, exist_ok=True)
         with open(path_to_list, 'wb') as file:
             pickle.dump([], file)
 
@@ -119,3 +122,37 @@ def delete_from_list(file_name):
 
     with open(path_to_list, 'wb') as file:
         pickle.dump(new_list, file)
+
+
+def add_to_tree(file_name):
+    path_to = pathlib.Path('/Users/aijanmuratbekova/pycharm_projects/fs/zeon_fs/code/btree.pickle')
+    if not path_to.exists():
+        with open(path_to, 'wb') as file:
+            pickle.dump({}, file)
+
+    with open(path_to, 'rb') as file:
+        btree = pickle.load(file)
+
+    add(file_name, btree)
+
+    with open(path_to, 'wb') as file:
+        pickle.dump(btree, file)
+
+
+def delete_from_tree(file_name):
+    path_to = pathlib.Path('/Users/aijanmuratbekova/pycharm_projects/fs/zeon_fs/code/btree.pickle')
+
+    with open(path_to, 'rb') as file:
+        btree = pickle.load(file)
+
+    delete(file_name, btree)
+
+    with open(path_to, 'wb') as file:
+        pickle.dump(btree, file)
+
+
+
+
+
+
+

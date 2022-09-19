@@ -1,6 +1,6 @@
 import shutil
 
-from .helper import root_path, add_to_list
+from .helper import root_path, add_to_list, add_to_tree
 from .helper import update_names, update_contents, get_data_to_add
 
 
@@ -20,3 +20,10 @@ def copy(file_name: str):
     update_contents(content_hash, contents, file_name, path_to_contents)
     print(f"\n File '{file_name}' was successfully added: \n")
     add_to_list(file_name)
+    add_to_tree(file_name)
+
+
+
+
+
+

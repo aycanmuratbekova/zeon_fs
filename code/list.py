@@ -1,15 +1,15 @@
-from btree.btree import TrieNode
-from .helper import root_path, read_from_db
+import pickle
+from pathlib import Path as p
+from .btree import search
 
 
 def ls(arg):
-
-    names = read_from_db(root_path/'btree/list.pickle')
-    tree_node = TrieNode(names)
-    files = tree_node.search(arg)
-    if len(files) == 0:
-        print("\nNot fount any files: \n")
-    else:
-        for f in files:
-            print(f)
+    path_to = p('/Users/aijanmuratbekova/pycharm_projects/fs/zeon_fs/code/btree.pickle')
+    with open(path_to, 'rb') as file:
+        trie = pickle.load(file)
+    names = search(arg, trie)
+    if len(names) == 0:
+        exit(f"\nEmpty\n")
+    for name in names:
+        print(name)
 

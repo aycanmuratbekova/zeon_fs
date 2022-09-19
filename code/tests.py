@@ -1,8 +1,7 @@
-from pathlib import Path
 import unittest
 import hashlib
 
-from helper import root_path, create_path, get_hash
+from helper import get_hash
 
 
 class HelperTestCase(unittest.TestCase):
